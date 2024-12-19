@@ -121,7 +121,5 @@ resource "aws_security_group" "ecs" {
   }
 }
 
-# ECS Cluster
-resource "aws_ecs_cluster" "main" {
-  name = var.ecs_cluster_name
-}
+
+
