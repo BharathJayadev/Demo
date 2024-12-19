@@ -1,0 +1,47 @@
+name: Terraform CI/CD
+
+on:
+  push:
+    branches:
+      - main  # Trigger on changes to the main branch
+  pull_request:
+    branches:
+      - main  # Trigger on pull requests targeting the main branch
+  workflow_dispatch:
+
+jobs:
+  terraform:
+    name: Terraform
+    runs-on: ubuntu-latest
+    env:
+      working-directory: Infra
+      TF_WORKSPACE: my-workspace
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: '1.5.0'  # Specify your desired Terraform version
+        
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}  # AWS access key from GitHub Secrets
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}  # AWS secret key from GitHub Secrets
+          aws-region: ${{ variables.AWS_REGION }}  # Your AWS region
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ${{ env.working-directory }}
+        
+      - name: Terraform Plan
+        run: terraform plan
+        working-directory: ${{ env.working-directory }}
+        
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+        working-directory: ${{ env.working-directory }}
+        if: github.ref == 'refs/heads/main'  # Only apply on main branch
